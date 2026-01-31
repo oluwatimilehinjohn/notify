@@ -1,34 +1,29 @@
 // producer.js
-const { Kafka } = require("kafkajs");
+const { Kafka, Partitioners } = require("kafkajs");
 const UserSignupSchema = require("./schemas/userSignup.schema");
 
+// Kafka connection (plaintext, local dev)
 const kafka = new Kafka({
   clientId: "notify-app",
-  brokers: ["localhost:9092"], // PLAINTEXT local Kafka
+  brokers: ["localhost:9092"], // matches docker-compose
+  createPartitioner: Partitioners.LegacyPartitioner, // avoid v2 warnings
 });
 
 const producer = kafka.producer();
 
-async function initProducer() {
-  await producer.connect();
-  console.log("Kafka Producer connected");
-}
-initProducer();
-
 async function sendSignupEvent(user) {
+  //  validate before sending
   const validatedUser = UserSignupSchema.parse({
     ...user,
     createdAt: new Date().toISOString(),
   });
 
+  await producer.connect();
   await producer.send({
     topic: "user-signup",
     messages: [{ value: JSON.stringify(validatedUser) }],
   });
-}
-
-process.on("exit", async () => {
   await producer.disconnect();
-});
+}
 
 module.exports = sendSignupEvent;

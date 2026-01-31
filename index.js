@@ -1,3 +1,5 @@
+const dotenv = require('dotenv');
+dotenv.config();
 const express = require("express");
 const sendSignupEvent = require("./producer");
 const prisma = require("./db");
@@ -8,10 +10,10 @@ app.use(express.json());
 
 app.post("/signup", async (req, res) => {
   try {
-    // ✅ validate request
+    // ✅ validate request body
     const data = UserSignupSchema.parse(req.body);
 
-    // ✅ save to DB
+    // ✅ save user to database
     const user = await prisma.user.create({
       data: {
         email: data.email,
@@ -19,15 +21,22 @@ app.post("/signup", async (req, res) => {
       },
     });
 
-    // ✅ emit event
+    // ✅ emit Kafka event (non-blocking)
     await sendSignupEvent(user);
 
-    res.json({ message: "User created", user });
+    return res.status(201).json({
+      message: "User created successfully",
+      user,
+    });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error(err);
+
+    return res.status(400).json({
+      error: err.message || "Something went wrong",
+    });
   }
 });
 
 app.listen(3000, () => {
-  console.log("API running on port 3000");
+  console.log("API running on http://localhost:3000");
 });
