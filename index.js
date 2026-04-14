@@ -10,10 +10,10 @@ app.use(express.json());
 
 app.post("/signup", async (req, res) => {
   try {
-    // ✅ validate request body
+    // validate request body
     const data = UserSignupSchema.parse(req.body);
 
-    // ✅ save user to database
+    // save user to database
     const user = await prisma.user.create({
       data: {
         email: data.email,
@@ -21,7 +21,7 @@ app.post("/signup", async (req, res) => {
       },
     });
 
-    // ✅ emit Kafka event (non-blocking)
+    // emit Kafka event (non-blocking)
     await sendSignupEvent(user);
 
     return res.status(201).json({

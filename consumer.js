@@ -19,7 +19,7 @@ async function startConsumer() {
       try {
         const user = JSON.parse(message.value.toString());
 
-        // ✅ save user data to DB (Postgres via Prisma)
+        // save user data to DB (Postgres via Prisma)
         await prisma.user.create({
           data: {
             name: user.name,
