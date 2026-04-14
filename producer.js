@@ -1,5 +1,6 @@
 // producer.js
 const { Kafka, Partitioners } = require("kafkajs");
+const crypto = require("crypto");
 const UserSignupSchema = require("./schemas/userSignup.schema");
 
 // Kafka connection (plaintext, local dev)
@@ -24,6 +25,10 @@ async function sendSignupEvent(user) {
     messages: [{ value: JSON.stringify(validatedUser) }],
   });
   await producer.disconnect();
+
+  
 }
+
+
 
 module.exports = sendSignupEvent;
